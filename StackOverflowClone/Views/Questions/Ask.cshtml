@@ -1,0 +1,280 @@
+@model StackOverflowClone.ViewModels.AskQuestionViewModel
+@{
+    ViewData["Title"] = "Ask a Question";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="ask-header mb-4">
+                <h1>Ask a public question</h1>
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-lightbulb"></i> Writing a good question</h6>
+                    <p class="mb-2">You're ready to ask a programming-related question and this form will help guide you through the process.</p>
+                    <ul class="mb-0">
+                        <li>Summarize your problem in a one-line title.</li>
+                        <li>Describe your problem in more detail.</li>
+                        <li>Describe what you tried and what you expected to happen.</li>
+                        <li>Add "tags" which help surface your question to members of the community.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <form asp-action="Ask" method="post" class="ask-form">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <!-- Title -->
+                <div class="form-group mb-4">
+                    <label asp-for="Title" class="form-label">
+                        <strong>Title</strong>
+                        <span class="text-muted">Be specific and imagine you're asking a question to another person</span>
+                    </label>
+                    <input asp-for="Title" class="form-control form-control-lg" placeholder="e.g. Is there an R function for finding the index of an element in a vector?" maxlength="300" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                    <div class="form-text">
+                        <span id="title-counter">0</span>/300 characters
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="form-group mb-4">
+                    <label asp-for="Body" class="form-label">
+                        <strong>Body</strong>
+                        <span class="text-muted">Include all the information someone would need to answer your question</span>
+                    </label>
+                    <div class="editor-toolbar mb-2">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-secondary" onclick="formatText('bold')" title="Bold">
+                                <i class="fas fa-bold"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="formatText('italic')" title="Italic">
+                                <i class="fas fa-italic"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="formatText('code')" title="Code">
+                                <i class="fas fa-code"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="formatText('link')" title="Link">
+                                <i class="fas fa-link"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <textarea asp-for="Body" class="form-control" rows="15" placeholder="Describe your problem in detail. Include what you've tried, what you expected to happen, and what actually happened." minlength="30"></textarea>
+                    <span asp-validation-for="Body" class="text-danger"></span>
+                    <div class="form-text">
+                        <span id="body-counter">0</span> characters (minimum 30)
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                <div class="form-group mb-4">
+                    <label asp-for="Tags" class="form-label">
+                        <strong>Tags</strong>
+                        <span class="text-muted">Add up to 5 tags to describe what your question is about</span>
+                    </label>
+                    <input asp-for="Tags" class="form-control" placeholder="e.g. javascript, python, c#, html, css" maxlength="200" />
+                    <span asp-validation-for="Tags" class="text-danger"></span>
+                    <div class="form-text">
+                        Separate tags with commas. Maximum 5 tags.
+                    </div>
+                    <div id="tag-suggestions" class="mt-2"></div>
+                </div>
+
+                <!-- Preview Section -->
+                <div class="form-group mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Preview</strong>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="updatePreview()">
+                            <i class="fas fa-eye"></i> Update Preview
+                        </button>
+                    </div>
+                    <div id="preview-container" class="border rounded p-3 bg-light">
+                        <div id="preview-title" class="h4 mb-3 text-muted">Your question title will appear here</div>
+                        <div id="preview-body" class="text-muted">Your question body will appear here</div>
+                        <div id="preview-tags" class="mt-3"></div>
+                    </div>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-paper-plane"></i> Post Your Question
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+
+            <!-- Tips Sidebar -->
+            <div class="tips-section mt-5">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-lightbulb text-warning"></i> Tips for asking a good question</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check text-success"></i> Search, and research before asking</li>
+                            <li class="mb-2"><i class="fas fa-check text-success"></i> Be specific with your question title</li>
+                            <li class="mb-2"><i class="fas fa-check text-success"></i> Make it relevant to others</li>
+                            <li class="mb-2"><i class="fas fa-check text-success"></i> Include all relevant code</li>
+                            <li class="mb-2"><i class="fas fa-check text-success"></i> Use proper grammar and spelling</li>
+                            <li class="mb-2"><i class="fas fa-check text-success"></i> Add relevant tags</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .ask-header h1 {
+        color: #3c4146;
+    }
+    .ask-form .form-label strong {
+        color: #0c0d0e;
+        font-size: 1.1em;
+    }
+    .ask-form .form-label .text-muted {
+        font-weight: normal;
+        font-size: 0.9em;
+        display: block;
+        margin-top: 2px;
+    }
+    .editor-toolbar {
+        border: 1px solid #d6d9dc;
+        border-bottom: none;
+        background-color: #f8f9fa;
+        padding: 8px;
+        border-radius: 3px 3px 0 0;
+    }
+    .ask-form textarea {
+        border-radius: 0 0 3px 3px;
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    }
+    #preview-container {
+        min-height: 200px;
+    }
+    .tag-preview {
+        display: inline-block;
+        background-color: #e1ecf4;
+        color: #39739d;
+        padding: 4px 8px;
+        margin-right: 5px;
+        border-radius: 3px;
+        font-size: 0.8em;
+    }
+    .tips-section {
+        position: sticky;
+        top: 20px;
+    }
+</style>
+
+<script>
+    // Character counters
+    document.getElementById('Title').addEventListener('input', function() {
+        document.getElementById('title-counter').textContent = this.value.length;
+        updatePreview();
+    });
+
+    document.getElementById('Body').addEventListener('input', function() {
+        document.getElementById('body-counter').textContent = this.value.length;
+        updatePreview();
+    });
+
+    document.getElementById('Tags').addEventListener('input', function() {
+        updatePreview();
+    });
+
+    // Format text functions
+    function formatText(format) {
+        const textarea = document.getElementById('Body');
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selectedText = textarea.value.substring(start, end);
+        let formattedText = '';
+
+        switch(format) {
+            case 'bold':
+                formattedText = `**${selectedText}**`;
+                break;
+            case 'italic':
+                formattedText = `*${selectedText}*`;
+                break;
+            case 'code':
+                if (selectedText.includes('\n')) {
+                    formattedText = `\`\`\`\n${selectedText}\n\`\`\``;
+                } else {
+                    formattedText = `\`${selectedText}\``;
+                }
+                break;
+            case 'link':
+                const url = prompt('Enter URL:');
+                if (url) {
+                    formattedText = `[${selectedText || 'link text'}](${url})`;
+                }
+                break;
+        }
+
+        if (formattedText) {
+            textarea.value = textarea.value.substring(0, start) + formattedText + textarea.value.substring(end);
+            textarea.focus();
+            textarea.setSelectionRange(start + formattedText.length, start + formattedText.length);
+            updatePreview();
+        }
+    }
+
+    // Update preview
+    function updatePreview() {
+        const title = document.getElementById('Title').value || 'Your question title will appear here';
+        const body = document.getElementById('Body').value || 'Your question body will appear here';
+        const tags = document.getElementById('Tags').value;
+
+        document.getElementById('preview-title').textContent = title;
+        document.getElementById('preview-body').innerHTML = body.replace(/\n/g, '<br>');
+
+        // Handle tags
+        const tagsContainer = document.getElementById('preview-tags');
+        if (tags.trim()) {
+            const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+            tagsContainer.innerHTML = tagArray.map(tag => 
+                `<span class="tag-preview">${tag}</span>`
+            ).join('');
+        } else {
+            tagsContainer.innerHTML = '';
+        }
+    }
+
+    // Initialize preview
+    updatePreview();
+
+    // Form validation
+    document.querySelector('.ask-form').addEventListener('submit', function(e) {
+        const title = document.getElementById('Title').value.trim();
+        const body = document.getElementById('Body').value.trim();
+
+        if (title.length < 10) {
+            e.preventDefault();
+            alert('Title must be at least 10 characters long.');
+            return;
+        }
+
+        if (body.length < 30) {
+            e.preventDefault();
+            alert('Question body must be at least 30 characters long.');
+            return;
+        }
+
+        const tags = document.getElementById('Tags').value.trim();
+        if (tags) {
+            const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+            if (tagArray.length > 5) {
+                e.preventDefault();
+                alert('Maximum 5 tags allowed.');
+                return;
+            }
+        }
+    });
+</script>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

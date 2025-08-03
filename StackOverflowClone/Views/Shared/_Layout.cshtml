@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Stack Overflow Clone</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/StackOverflowClone.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        .navbar-so { background-color: #f8f9fa; border-bottom: 1px solid #e3e6ea; }
+        .navbar-brand-so { color: #f48024 !important; font-weight: bold; }
+        .search-container { position: relative; flex-grow: 1; max-width: 600px; margin: 0 20px; }
+        .search-input { border-radius: 3px; border: 1px solid #babfc4; }
+        .btn-ask { background-color: #0074cc; color: white; border-radius: 3px; }
+        .btn-ask:hover { background-color: #0063bf; color: white; }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .reputation-badge { background-color: #f8f9fa; color: #6a737c; padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-so">
+            <div class="container-fluid">
+                <a class="navbar-brand navbar-brand-so" asp-controller="Questions" asp-action="Index">
+                    <i class="fab fa-stack-overflow"></i> Stack Overflow Clone
+                </a>
+                
+                <div class="search-container d-none d-lg-block">
+                    <form asp-controller="Questions" asp-action="Index" method="get" class="d-flex">
+                        <input class="form-control search-input" type="search" name="search" placeholder="Search questions..." aria-label="Search" value="@ViewData["SearchTerm"]">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Questions" asp-action="Index">Questions</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Tags" asp-action="Index">Tags</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Users" asp-action="Index">Users</a>
+                        </li>
+                    </ul>
+                    
+                    <div class="d-flex align-items-center gap-3">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <a asp-controller="Questions" asp-action="Ask" class="btn btn-ask">
+                                <i class="fas fa-plus"></i> Ask Question
+                            </a>
+                            <div class="user-info">
+                                <div class="dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-user-circle"></i> @User.Identity.Name
+                                        <span class="reputation-badge">1,234</span>
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" asp-controller="Users" asp-action="Profile">Profile</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Users" asp-action="Settings">Settings</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+                                                <button type="submit" class="dropdown-item">Logout</button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <a class="btn btn-outline-primary" asp-area="Identity" asp-page="/Account/Login">Log in</a>
+                            <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Register">Sign up</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2025 - StackOverflowClone - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

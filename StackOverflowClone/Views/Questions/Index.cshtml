@@ -1,0 +1,240 @@
+@model StackOverflowClone.ViewModels.QuestionsIndexViewModel
+@{
+    ViewData["Title"] = "Questions";
+    ViewData["SearchTerm"] = Model.SearchTerm;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2 d-none d-md-block">
+            <div class="sidebar">
+                <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-question-circle"></i> Questions
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-tags"></i> Tags
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-users"></i> Users
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1>
+                        @if (!string.IsNullOrEmpty(Model.SearchTerm))
+                        {
+                            <span>Search Results for "@Model.SearchTerm"</span>
+                        }
+                        else
+                        {
+                            <span>All Questions</span>
+                        }
+                    </h1>
+                    <p class="text-muted">@Model.Questions.Count questions</p>
+                </div>
+                
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <a asp-action="Ask" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Ask Question
+                    </a>
+                }
+            </div>
+
+            <!-- Sort Options -->
+            <div class="mb-3">
+                <div class="btn-group" role="group">
+                    <a asp-action="Index" asp-route-sortBy="newest" asp-route-search="@Model.SearchTerm" 
+                       class="btn @(Model.SortBy == "newest" ? "btn-primary" : "btn-outline-primary")">Newest</a>
+                    <a asp-action="Index" asp-route-sortBy="active" asp-route-search="@Model.SearchTerm" 
+                       class="btn @(Model.SortBy == "active" ? "btn-primary" : "btn-outline-primary")">Active</a>
+                    <a asp-action="Index" asp-route-sortBy="votes" asp-route-search="@Model.SearchTerm" 
+                       class="btn @(Model.SortBy == "votes" ? "btn-primary" : "btn-outline-primary")">Votes</a>
+                    <a asp-action="Index" asp-route-sortBy="unanswered" asp-route-search="@Model.SearchTerm" 
+                       class="btn @(Model.SortBy == "unanswered" ? "btn-primary" : "btn-outline-primary")">Unanswered</a>
+                </div>
+            </div>
+
+            <!-- Questions List -->
+            @if (Model.Questions.Any())
+            {
+                <div class="questions-list">
+                    @foreach (var question in Model.Questions)
+                    {
+                        <div class="card mb-3 question-card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-2 text-center">
+                                        <div class="question-stats">
+                                            <div class="stat-item">
+                                                <span class="stat-number @(question.Score > 0 ? "text-success" : question.Score < 0 ? "text-danger" : "")">@question.Score</span>
+                                                <span class="stat-label">votes</span>
+                                            </div>
+                                            <div class="stat-item @(question.IsAnswered ? "answered" : "")">
+                                                <span class="stat-number">@question.AnswerCount</span>
+                                                <span class="stat-label">answers</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-number">@question.Views</span>
+                                                <span class="stat-label">views</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-10">
+                                        <h5 class="card-title">
+                                            <a asp-action="Details" asp-route-id="@question.Id" class="question-title">
+                                                @question.Title
+                                            </a>
+                                        </h5>
+                                        <p class="card-text question-excerpt">
+                                            @Html.Raw(question.Body.Length > 200 ? question.Body.Substring(0, 200) + "..." : question.Body)
+                                        </p>
+                                        
+                                        <!-- Tags -->
+                                        @if (question.Tags.Any())
+                                        {
+                                            <div class="question-tags mb-2">
+                                                @foreach (var tag in question.Tags)
+                                                {
+                                                    <span class="badge bg-light text-dark tag-badge">@tag</span>
+                                                }
+                                            </div>
+                                        }
+
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="question-meta">
+                                                <small class="text-muted">
+                                                    asked @question.CreatedAt.ToString("MMM dd, yyyy 'at' HH:mm") by 
+                                                    <strong>@question.UserName</strong>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Questions pagination">
+                        <ul class="pagination justify-content-center">
+                            @if (Model.CurrentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage - 1)" asp-route-sortBy="@Model.SortBy" asp-route-search="@Model.SearchTerm">Previous</a>
+                                </li>
+                            }
+                            
+                            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-sortBy="@Model.SortBy" asp-route-search="@Model.SearchTerm">@i</a>
+                                </li>
+                            }
+                            
+                            @if (Model.CurrentPage < Model.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage + 1)" asp-route-sortBy="@Model.SortBy" asp-route-search="@Model.SearchTerm">Next</a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
+                    <h3>No questions found</h3>
+                    @if (!string.IsNullOrEmpty(Model.SearchTerm))
+                    {
+                        <p class="text-muted">Try adjusting your search terms or <a asp-action="Index">browse all questions</a>.</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Be the first to ask a question!</p>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <a asp-action="Ask" class="btn btn-primary">Ask the first question</a>
+                        }
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .question-card {
+        border: 1px solid #e3e6ea;
+        transition: box-shadow 0.2s;
+    }
+    .question-card:hover {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .question-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .stat-item.answered {
+        background-color: #5eba7d;
+        color: white;
+        border-radius: 3px;
+        padding: 5px;
+    }
+    .stat-number {
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+    .stat-label {
+        font-size: 0.8em;
+        color: #6a737c;
+    }
+    .stat-item.answered .stat-label {
+        color: white;
+    }
+    .question-title {
+        color: #0074cc;
+        text-decoration: none;
+        font-size: 1.1em;
+    }
+    .question-title:hover {
+        color: #0063bf;
+    }
+    .question-excerpt {
+        color: #3c4146;
+        line-height: 1.4;
+    }
+    .tag-badge {
+        background-color: #e1ecf4 !important;
+        color: #39739d !important;
+        padding: 4px 8px;
+        margin-right: 5px;
+        border-radius: 3px;
+        font-size: 0.8em;
+    }
+    .sidebar {
+        position: sticky;
+        top: 20px;
+    }
+</style>

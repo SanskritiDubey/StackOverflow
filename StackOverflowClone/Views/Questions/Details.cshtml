@@ -1,0 +1,395 @@
+@model StackOverflowClone.ViewModels.QuestionDetailsViewModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Question -->
+        <div class="col-12">
+            <div class="question-header mb-4">
+                <h1 class="question-title">@Model.Title</h1>
+                <div class="question-meta text-muted">
+                    <span>Asked @Model.CreatedAt.ToString("MMM dd, yyyy 'at' HH:mm")</span>
+                    @if (Model.UpdatedAt.HasValue)
+                    {
+                        <span class="ms-3">Modified @Model.UpdatedAt.Value.ToString("MMM dd, yyyy 'at' HH:mm")</span>
+                    }
+                    <span class="ms-3">Viewed @Model.Views times</span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-1 text-center">
+                    <!-- Voting -->
+                    <div class="vote-controls">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <button class="btn btn-link vote-btn" onclick="vote(@Model.Id, 1, 'question')">
+                                <i class="fas fa-chevron-up fa-2x"></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <i class="fas fa-chevron-up fa-2x text-muted"></i>
+                        }
+                        
+                        <div class="vote-score my-2">
+                            <span class="score-number @(Model.Score > 0 ? "text-success" : Model.Score < 0 ? "text-danger" : "")" id="question-score-@Model.Id">
+                                @Model.Score
+                            </span>
+                        </div>
+                        
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <button class="btn btn-link vote-btn" onclick="vote(@Model.Id, -1, 'question')">
+                                <i class="fas fa-chevron-down fa-2x"></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <i class="fas fa-chevron-down fa-2x text-muted"></i>
+                        }
+                    </div>
+                </div>
+
+                <div class="col-md-11">
+                    <!-- Question Body -->
+                    <div class="question-body mb-4">
+                        <div class="content">
+                            @Html.Raw(Model.Body.Replace("\n", "<br>"))
+                        </div>
+                        
+                        <!-- Tags -->
+                        @if (Model.Tags.Any())
+                        {
+                            <div class="question-tags mt-3">
+                                @foreach (var tag in Model.Tags)
+                                {
+                                    <span class="badge bg-light text-dark tag-badge">@tag</span>
+                                }
+                            </div>
+                        }
+
+                        <!-- Question Author -->
+                        <div class="d-flex justify-content-end mt-4">
+                            <div class="user-card">
+                                <div class="user-info">
+                                    <small class="text-muted">asked @Model.CreatedAt.ToString("MMM dd, yyyy 'at' HH:mm")</small>
+                                    <div class="user-details">
+                                        <i class="fas fa-user-circle"></i>
+                                        <strong>@Model.UserName</strong>
+                                        <span class="reputation-badge">@Model.UserReputation</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comments Section -->
+                    <div class="comments-section mb-4">
+                        @if (Model.Comments.Any())
+                        {
+                            <div class="comments">
+                                @foreach (var comment in Model.Comments)
+                                {
+                                    <div class="comment">
+                                        <span class="comment-text">@comment.Body</span>
+                                        <span class="comment-meta text-muted">
+                                            – <strong>@comment.UserName</strong> @comment.CreatedAt.ToString("MMM dd 'at' HH:mm")
+                                        </span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <div class="add-comment mt-2">
+                                <a href="#" class="text-muted" onclick="showCommentForm(@Model.Id, 'question')">add a comment</a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Answers Section -->
+            <div class="answers-section">
+                <h3>@Model.Answers.Count Answer@(Model.Answers.Count != 1 ? "s" : "")</h3>
+                
+                @if (Model.Answers.Any())
+                {
+                    @foreach (var answer in Model.Answers)
+                    {
+                        <div class="answer mb-4 @(answer.IsAccepted ? "accepted-answer" : "")" id="answer-@answer.Id">
+                            <div class="row">
+                                <div class="col-md-1 text-center">
+                                    <!-- Answer Voting -->
+                                    <div class="vote-controls">
+                                        @if (User.Identity.IsAuthenticated)
+                                        {
+                                            <button class="btn btn-link vote-btn" onclick="vote(@answer.Id, 1, 'answer')">
+                                                <i class="fas fa-chevron-up fa-2x"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-chevron-up fa-2x text-muted"></i>
+                                        }
+                                        
+                                        <div class="vote-score my-2">
+                                            <span class="score-number @(answer.Score > 0 ? "text-success" : answer.Score < 0 ? "text-danger" : "")" id="answer-score-@answer.Id">
+                                                @answer.Score
+                                            </span>
+                                        </div>
+                                        
+                                        @if (User.Identity.IsAuthenticated)
+                                        {
+                                            <button class="btn btn-link vote-btn" onclick="vote(@answer.Id, -1, 'answer')">
+                                                <i class="fas fa-chevron-down fa-2x"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-chevron-down fa-2x text-muted"></i>
+                                        }
+
+                                        <!-- Accept Answer Button -->
+                                        @if (User.Identity.IsAuthenticated)
+                                        {
+                                            <div class="accept-answer mt-2">
+                                                <button class="btn btn-link accept-btn @(answer.IsAccepted ? "accepted" : "")" 
+                                                        onclick="acceptAnswer(@answer.Id, @Model.Id)">
+                                                    <i class="fas fa-check fa-2x @(answer.IsAccepted ? "text-success" : "text-muted")"></i>
+                                                </button>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="col-md-11">
+                                    @if (answer.IsAccepted)
+                                    {
+                                        <div class="accepted-badge mb-2">
+                                            <i class="fas fa-check text-success"></i>
+                                            <span class="text-success">Accepted Answer</span>
+                                        </div>
+                                    }
+
+                                    <div class="answer-body">
+                                        @Html.Raw(answer.Body.Replace("\n", "<br>"))
+                                    </div>
+
+                                    <!-- Answer Author -->
+                                    <div class="d-flex justify-content-end mt-3">
+                                        <div class="user-card">
+                                            <div class="user-info">
+                                                <small class="text-muted">answered @answer.CreatedAt.ToString("MMM dd, yyyy 'at' HH:mm")</small>
+                                                <div class="user-details">
+                                                    <i class="fas fa-user-circle"></i>
+                                                    <strong>@answer.UserName</strong>
+                                                    <span class="reputation-badge">@answer.UserReputation</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Answer Comments -->
+                                    <div class="comments-section mt-3">
+                                        @if (answer.Comments.Any())
+                                        {
+                                            <div class="comments">
+                                                @foreach (var comment in answer.Comments)
+                                                {
+                                                    <div class="comment">
+                                                        <span class="comment-text">@comment.Body</span>
+                                                        <span class="comment-meta text-muted">
+                                                            – <strong>@comment.UserName</strong> @comment.CreatedAt.ToString("MMM dd 'at' HH:mm")
+                                                        </span>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                        
+                                        @if (User.Identity.IsAuthenticated)
+                                        {
+                                            <div class="add-comment mt-2">
+                                                <a href="#" class="text-muted" onclick="showCommentForm(@answer.Id, 'answer')">add a comment</a>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                    }
+                }
+
+                <!-- Answer Form -->
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <div class="answer-form mt-4">
+                        <h4>Your Answer</h4>
+                        <form asp-controller="Answers" asp-action="Create" method="post">
+                            <input type="hidden" name="questionId" value="@Model.Id" />
+                            <div class="mb-3">
+                                <textarea name="body" class="form-control" rows="10" placeholder="Write your answer here..." required minlength="30"></textarea>
+                                <div class="form-text">Minimum 30 characters required.</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Post Your Answer</button>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center mt-4">
+                        <p>You must be <a asp-area="Identity" asp-page="/Account/Login">logged in</a> to answer this question.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .question-title {
+        color: #3c4146;
+        line-height: 1.3;
+    }
+    .vote-controls {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .vote-btn {
+        padding: 0;
+        color: #babfc4;
+        transition: color 0.2s;
+    }
+    .vote-btn:hover {
+        color: #f48024;
+    }
+    .score-number {
+        font-size: 1.5em;
+        font-weight: bold;
+    }
+    .content {
+        line-height: 1.6;
+        color: #3c4146;
+    }
+    .tag-badge {
+        background-color: #e1ecf4 !important;
+        color: #39739d !important;
+        padding: 4px 8px;
+        margin-right: 5px;
+        border-radius: 3px;
+        font-size: 0.8em;
+    }
+    .user-card {
+        background-color: #e1ecf4;
+        border-radius: 3px;
+        padding: 8px;
+        max-width: 200px;
+    }
+    .user-details {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .reputation-badge {
+        background-color: #f8f9fa;
+        color: #6a737c;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 0.8em;
+    }
+    .comments {
+        border-top: 1px solid #e3e6ea;
+        padding-top: 10px;
+    }
+    .comment {
+        padding: 5px 0;
+        border-bottom: 1px solid #f1f2f3;
+    }
+    .comment:last-child {
+        border-bottom: none;
+    }
+    .comment-text {
+        color: #3c4146;
+    }
+    .accepted-answer {
+        background-color: #f8fff8;
+        border-left: 4px solid #5eba7d;
+        padding-left: 15px;
+    }
+    .accepted-badge {
+        color: #5eba7d;
+        font-weight: bold;
+    }
+    .accept-btn.accepted {
+        color: #5eba7d !important;
+    }
+</style>
+
+<script>
+    function vote(id, voteType, type) {
+        const url = type === 'question' ? '/Questions/Vote' : '/Answers/Vote';
+        const data = type === 'question' ? { questionId: id, voteType: voteType } : { answerId: id, voteType: voteType };
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const scoreElement = document.getElementById(`${type}-score-${id}`);
+                if (data.newScore !== undefined) {
+                    scoreElement.textContent = data.newScore;
+                } else {
+                    location.reload(); // Reload to get updated score
+                }
+            } else {
+                alert(data.message || 'Error occurred while voting');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error occurred while voting');
+        });
+    }
+
+    function acceptAnswer(answerId, questionId) {
+        fetch('/Answers/Accept', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            },
+            body: JSON.stringify({ answerId: answerId, questionId: questionId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Reload to show accepted answer styling
+            } else {
+                alert(data.message || 'Error occurred while accepting answer');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error occurred while accepting answer');
+        });
+    }
+
+    function showCommentForm(id, type) {
+        // Implementation for showing comment form
+        alert('Comment functionality will be implemented in the next phase');
+    }
+</script>
