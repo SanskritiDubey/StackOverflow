@@ -9,10 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-// Configure Entity Framework with SQL Server for Identity (temporary workaround)
-// We'll use in-memory database for Identity since Access doesn't work well with EF
+// Configure Entity Framework with SQLite for both Identity and application data
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseInMemoryDatabase("IdentityDb"));
+    options.UseSqlite(connectionString));
 
 // Configure Identity
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => {
@@ -28,7 +27,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => {
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
 // Add custom services
-builder.Services.AddScoped<AccessDbService>();
+builder.Services.AddScoped<QuestionService>();
 
 builder.Services.AddControllersWithViews();
 
@@ -63,7 +62,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Create sample users in the in-memory Identity database
+// Create sample users and ensure SQLite database is created
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -73,7 +72,7 @@ using (var scope = app.Services.CreateScope())
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         
-        // Ensure database is created
+        // Ensure SQLite database is created with all tables
         context.Database.EnsureCreated();
         
         // Create roles

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("StackOverflowClone")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+716dbaa93c4f8c35d7ec90b04405099adba19483")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+70d5cffe2a3842c805fafd6d1f9743b90dec9840")]
 [assembly: System.Reflection.AssemblyProductAttribute("StackOverflowClone")]
 [assembly: System.Reflection.AssemblyTitleAttribute("StackOverflowClone")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

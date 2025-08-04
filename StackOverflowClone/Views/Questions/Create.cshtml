@@ -1,0 +1,85 @@
+@model StackOverflowClone.ViewModels.CreateQuestionViewModel
+@{
+    ViewData["Title"] = "Ask a Question";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2>@ViewData["Title"]</h2>
+                <p class="text-muted">Be specific and imagine you're asking a question to another person</p>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Title" class="form-label">
+                            <strong>Title</strong>
+                            <span class="text-muted">Be specific and imagine you're asking a question to another person</span>
+                        </label>
+                        <input asp-for="Title" class="form-control" placeholder="e.g. Is there an R function for finding the index of an element in a vector?" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Body" class="form-label">
+                            <strong>Body</strong>
+                            <span class="text-muted">Include all the information someone would need to answer your question</span>
+                        </label>
+                        <textarea asp-for="Body" class="form-control" rows="10" 
+                                  placeholder="Describe your problem in detail. Include what you've tried and what you expected to happen."></textarea>
+                        <span asp-validation-for="Body" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Tags" class="form-label">
+                            <strong>Tags</strong>
+                            <span class="text-muted">Add up to 5 tags to describe what your question is about</span>
+                        </label>
+                        <input asp-for="Tags" class="form-control" placeholder="e.g. javascript, html, css" />
+                        <span asp-validation-for="Tags" class="text-danger"></span>
+                        <small class="form-text text-muted">Separate tags with commas</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Post Your Question</button>
+                        <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>How to Ask a Good Question</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <strong>Search</strong> and research first
+                    </li>
+                    <li class="mb-2">
+                        <strong>Write a title</strong> that summarizes the specific problem
+                    </li>
+                    <li class="mb-2">
+                        <strong>Describe the problem</strong> in detail
+                    </li>
+                    <li class="mb-2">
+                        <strong>Provide context</strong> for links referenced in the question
+                    </li>
+                    <li class="mb-2">
+                        <strong>Include relevant tags</strong> to help others find your question
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

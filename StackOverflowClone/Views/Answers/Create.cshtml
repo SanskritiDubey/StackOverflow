@@ -1,0 +1,77 @@
+@model StackOverflowClone.ViewModels.CreateAnswerViewModel
+@{
+    ViewData["Title"] = "Write an Answer";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4>Question: @Model.QuestionTitle</h4>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3>@ViewData["Title"]</h3>
+                <p class="text-muted">Share your knowledge and help the community</p>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    
+                    <input type="hidden" asp-for="QuestionId" />
+                    <input type="hidden" asp-for="QuestionTitle" />
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Body" class="form-label">
+                            <strong>Your Answer</strong>
+                            <span class="text-muted">Provide a detailed answer to help solve the problem</span>
+                        </label>
+                        <textarea asp-for="Body" class="form-control" rows="12" 
+                                  placeholder="Write your answer here. Include code examples, explanations, and any relevant details that would help solve the problem."></textarea>
+                        <span asp-validation-for="Body" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Post Your Answer</button>
+                        <a asp-controller="Questions" asp-action="Details" asp-route-id="@Model.QuestionId" class="btn btn-secondary ms-2">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>How to Write a Good Answer</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <strong>Read the question carefully</strong> and understand what is being asked
+                    </li>
+                    <li class="mb-2">
+                        <strong>Provide a complete answer</strong> that addresses the specific problem
+                    </li>
+                    <li class="mb-2">
+                        <strong>Include code examples</strong> when relevant and working
+                    </li>
+                    <li class="mb-2">
+                        <strong>Explain your reasoning</strong> and why your solution works
+                    </li>
+                    <li class="mb-2">
+                        <strong>Be clear and concise</strong> while providing enough detail
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
